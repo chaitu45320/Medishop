@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medishop — License Admin</title>
+<style>
+:root{
+  --bg:#060d19;--surface:#0c1a2e;--card:#111f35;--border:#1a3050;
+  --accent:#00c9a7;--accent2:#0ea5e9;--accent3:#f59e0b;
+  --danger:#ef4444;--success:#22c55e;--text:#e2eaf4;--muted:#6b8ab0;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;font-size:14px}
+a{color:var(--accent);text-decoration:none}
+
+/* Layout */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700}
+.brand-tag{font-size:11px;color:var(--muted);font-weight:400}
+.main{max-width:1400px;margin:0 auto;padding:24px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.tab{padding:10px 18px;cursor:pointer;font-size:13px;font-weight:600;
+  color:var(--muted);border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--text)}
+.panel{display:none}.panel.active{display:block}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:900px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;
+  border-top:3px solid var(--accent)}
+.stat:nth-child(2){border-top-color:var(--success)}
+.stat:nth-child(3){border-top-color:var(--accent3)}
+.stat:nth-child(4){border-top-color:var(--accent2)}
+.stat:nth-child(5){border-top-color:#a78bfa}
+.stat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.stat-value{font-size:28px;font-weight:800}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px}
+.card h3{font-size:14px;font-weight:700;margin-bottom:16px}
+
+/* Forms */
+.form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+input,select,textarea{background:var(--card);border:1.5px solid var(--border);color:var(--text);
+  padding:9px 12px;border-radius:8px;font-size:13px;outline:none;font-family:inherit}
+input:focus,select:focus{border-color:var(--accent)}
+input[type=text],input[type=email],input[type=number],select{min-width:180px}
+label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;
+  margin-bottom:4px;letter-spacing:.05em}
+.form-group{display:flex;flex-direction:column}
+
+/* Buttons */
+.btn{padding:9px 16px;border-radius:8px;border:none;cursor:pointer;
+  font-size:13px;font-weight:700;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{opacity:.85;transform:translateY(-1px)}
+.btn-primary{background:var(--accent);color:#000}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-warn{background:var(--accent3);color:#000}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px}
+.btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.btn-blue{background:var(--accent2);color:#fff}
+
+/* Key output box */
+.key-display{background:var(--card);border:2px solid var(--success);border-radius:10px;
+  padding:16px;font-family:monospace;font-size:18px;font-weight:700;
+  color:var(--success);letter-spacing:.08em;word-break:break-all;margin-top:14px;display:none;text-align:center}
+.key-meta{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;
+  margin-top:10px;font-size:12px;color:var(--muted)}
+.key-meta strong{color:var(--text)}
+
+/* Alerts */
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.alert.ok{background:rgba(34,197,94,.1);border:1px solid var(--success);color:var(--success);display:block}
+.alert.err{background:rgba(239,68,68,.1);border:1px solid var(--danger);color:var(--danger);display:block}
+.alert.warn{background:rgba(245,158,11,.1);border:1px solid var(--accent3);color:var(--accent3);display:block}
+
+/* Tables */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 10px;font-size:10px;font-weight:700;text-align:left;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;background:var(--card);border-bottom:1px solid var(--border)}
+td{padding:10px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+tr:hover td{background:rgba(0,201,167,.03)}
+.mono{font-family:monospace;font-size:11px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-full{background:rgba(34,197,94,.12);color:var(--success)}
+.badge-trial{background:rgba(245,158,11,.14);color:var(--accent3)}
+.badge-expired{background:rgba(239,68,68,.12);color:var(--danger)}
+.badge-revoked{background:rgba(100,116,139,.12);color:var(--muted)}
+.badge-active{background:rgba(0,201,167,.12);color:var(--accent)}
+
+/* Search */
+.search-bar{margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap}
+.search-bar input{flex:1;min-width:200px}
+
+/* Actions */
+.actions{display:flex;gap:4px;flex-wrap:wrap}
+
+/* Detail panel (slide-in) */
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none}
+.detail-overlay.open{display:block}
+.detail-panel{position:fixed;top:0;right:0;width:460px;max-width:100vw;height:100vh;
+  background:var(--surface);border-left:1px solid var(--border);z-index:201;
+  padding:24px;overflow-y:auto;transform:translateX(100%);transition:transform .25s ease}
+.detail-panel.open{transform:none}
+.detail-close{position:absolute;top:14px;right:14px;background:var(--card);
+  border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:16px;color:var(--muted)}
+.detail-close:hover{color:var(--text)}
+.detail-key{font-family:monospace;font-size:13px;color:var(--accent);background:var(--card);
+  border-radius:8px;padding:12px;text-align:center;word-break:break-all;margin:14px 0;letter-spacing:.04em}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.detail-item{background:var(--card);border-radius:8px;padding:12px}
+.detail-item-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:5px}
+.detail-item-val{font-size:16px;font-weight:700}
+.device-card{background:var(--card);border-radius:8px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--border)}
+.device-name{font-weight:700;font-size:13px;margin-bottom:4px}
+.device-meta{font-size:11px;color:var(--muted);margin-bottom:6px}
+.device-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;
+  box-shadow:0 8px 30px rgba(0,0,0,.4);transform:translateY(20px);opacity:0;
+  transition:all .25s;z-index:999;pointer-events:none}
+#toast.show{transform:none;opacity:1}
+#toast.ok{border-color:var(--success);color:var(--success)}
+#toast.err{border-color:var(--danger);color:var(--danger)}
+#toast.info{border-color:var(--accent2);color:var(--accent2)}
+
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,201,167,.2);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-row td{text-align:center;padding:30px;color:var(--muted)}
+.empty-row td{text-align:center;padding:30px;color:var(--muted)}
+
+/* Days left bar */
+.days-bar{height:4px;border-radius:2px;background:var(--border);margin-top:4px;overflow:hidden}
+.days-fill{height:100%;border-radius:2px;transition:width .3s}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    💊 Medishop
+    <span class="brand-tag">License Admin Portal</span>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <span id="serverStatus" style="font-size:12px;color:var(--muted)">Checking…</span>
+    <button class="btn btn-secondary btn-sm" onclick="exportData()">⬇ Export JSON</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Stats bar -->
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total Keys</div><div class="stat-value" id="s-total" style="color:var(--accent)">—</div></div>
+    <div class="stat"><div class="stat-label">Full Licenses</div><div class="stat-value" id="s-full" style="color:var(--success)">—</div></div>
+    <div class="stat"><div class="stat-label">Trial Licenses</div><div class="stat-value" id="s-trial" style="color:var(--accent3)">—</div></div>
+    <div class="stat"><div class="stat-label">Active Devices</div><div class="stat-value" id="s-devices" style="color:var(--accent2)">—</div></div>
+    <div class="stat"><div class="stat-label">Today Activations</div><div class="stat-value" id="s-today" style="color:#a78bfa">—</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('keys',this)">📋 All Licenses</div>
+    <div class="tab" onclick="showTab('generate',this)">✨ Generate Key</div>
+    <div class="tab" onclick="showTab('verify',this)">🔍 Verify Key</div>
+    <div class="tab" onclick="showTab('suspicious',this)">⚠️ Suspicious</div>
+    <div class="tab" onclick="showTab('logs',this)">📜 Activity Logs</div>
+  </div>
+
+  <!-- ALL LICENSES -->
+  <div id="tab-keys" class="panel active">
+    <div class="card">
+      <h3>📋 All License Keys</h3>
+      <div class="search-bar">
+        <input type="search" id="keySearch" placeholder="Search by key, email, notes…" oninput="filterKeys()"/>
+        <select id="keyFilter" onchange="filterKeys()">
+          <option value="">All Types</option>
+          <option value="full">Full</option>
+          <option value="trial">Trial</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="loadKeys()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>License Key</th><th>Email</th><th>Type / Days Left</th>
+            <th>Devices</th><th>Status</th><th>Issued</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="keysBody"><tr class="loading-row"><td colspan="7"><span class="spinner"></span> Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERATE -->
+  <div id="tab-generate" class="panel">
+    <div class="card" style="max-width:600px">
+      <h3>✨ Generate New License Key</h3>
+      <div class="form-row" style="flex-wrap:wrap;gap:12px">
+        <div class="form-group">
+          <label>Customer Email *</label>
+          <input type="email" id="genEmail" placeholder="pharmacy@example.com" style="min-width:240px"/>
+        </div>
+        <div class="form-group">
+          <label>License Type</label>
+          <select id="genType">
+            <option value="full">Full License (Never Expires)</option>
+            <option value="trial">Trial License (30 Days)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Max Devices</label>
+          <input type="number" id="genDevices" value="1" min="1" max="10" style="min-width:90px;max-width:90px"/>
+        </div>
+        <div class="form-group" style="min-width:200px">
+          <label>Notes (optional)</label>
+          <input type="text" id="genNotes" placeholder="e.g. Shop name, city"/>
+        </div>
+        <div class="form-group"><label>&nbsp;</label>
+          <button class="btn btn-primary" id="genBtn" onclick="generateKey()">✨ Generate &amp; Register Key</button>
+        </div>
+      </div>
+
+      <div id="genKeyOut" class="key-display">
+        <div id="genKeyText"></div>
+        <div class="key-meta">
+          <span>Type: <strong id="genKeyType"></strong></span>
+          <span>Email: <strong id="genKeyEmail"></strong></span>
+          <span>Max Devices: <strong id="genKeyDev"></strong></span>
+        </div>
+        <button class="btn btn-secondary" style="margin-top:12px;width:100%" onclick="copyKey()">📋 Copy Key to Clipboard</button>
+      </div>
+      <div id="genAlert" class="alert"></div>
+    </div>
+
+    <div class="card" style="max-width:600px">
+      <h3>💬 Share Key via WhatsApp</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Paste the generated key below and send to customer directly.</p>
+      <div class="form-row">
+        <input type="text" id="copyKey" placeholder="Paste key here…" style="flex:1;font-family:monospace"/>
+        <button class="btn btn-primary" onclick="copyToClipboard()">📋 Copy</button>
+        <button class="btn btn-success" onclick="openWhatsApp()">💬 WhatsApp</button>
+      </div>
+      <div id="copyAlert" class="alert"></div>
+    </div>
+  </div>
+
+  <!-- VERIFY -->
+  <div id="tab-verify" class="panel">
+    <div class="card" style="max-width:600px">
+      <h3>🔍 Verify / Lookup Key</h3>
+      <div class="form-row">
+        <input type="text" id="verifyKeyInput" placeholder="MEDSHP-FULL-XXXXXX-XXXXXX-XXXXXX"
+          style="flex:1;font-family:monospace;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/>
+        <button class="btn btn-primary" onclick="verifyKey()">🔍 Lookup</button>
+      </div>
+      <div id="verifyResult" style="margin-top:16px"></div>
+    </div>
+  </div>
+
+  <!-- SUSPICIOUS -->
+  <div id="tab-suspicious" class="panel">
+    <div class="card">
+      <h3>⚠️ Suspicious Activity — Keys with 3+ Failed Attempts</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Key</th><th>Email</th><th>Type</th><th>Failures</th><th>Last Attempt</th><th>IPs</th></tr></thead>
+          <tbody id="suspBody"><tr class="loading-row"><td colspan="6"><span class="spinner"></span> Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGS -->
+  <div id="tab-logs" class="panel">
+    <div class="card">
+      <h3>📜 Activity Logs</h3>
+      <div class="search-bar">
+        <select id="logFilter" onchange="loadLogs()">
+          <option value="">All Actions</option>
+          <option value="activate">Activate</option>
+          <option value="reactivate">Re-activate</option>
+          <option value="validate">Validate</option>
+          <option value="deactivate">Deactivate</option>
+        </select>
+        <input id="logSearch" placeholder="Filter by IP, detail…" oninput="filterLogs()" style="flex:1;min-width:180px"/>
+        <button class="btn btn-secondary btn-sm" onclick="loadLogs()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>Action</th><th>Result</th><th>Key (hash)</th><th>Device</th><th>IP</th><th>Detail</th></tr></thead>
+          <tbody id="logsBody"><tr class="loading-row"><td colspan="7"><span class="spinner"></span> Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Detail slide-over panel -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <button class="detail-close" onclick="closeDetail()">✕</button>
+  <div id="detailContent"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const TOKEN  = params.get('token') || '';
+const BASE   = location.origin;
+let allKeys  = [], allLogs = [];
+
+// ── API helper ────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(BASE + '/admin' + path, opts);
+  return r.json();
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(t._to);
+  t._to = setTimeout(() => t.className = '', 3500);
+}
+
+// ── Formatting ────────────────────────────────────────────────
+function fmtDate(ts) {
+  if (!ts) return '—';
+  return new Date(+ts).toLocaleString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function typeBadge(type, daysLeft, isActive) {
+  if (!isActive) return '<span class="badge badge-revoked">REVOKED</span>';
+  if (type === 'full') return '<span class="badge badge-full">✓ FULL</span>';
+  if (daysLeft === null || daysLeft === undefined)
+    return '<span class="badge badge-trial">TRIAL</span>';
+  if (daysLeft <= 0) return '<span class="badge badge-expired">EXPIRED</span>';
+  // Color shifts: >10 days = green-ish, 1-10 = orange, 0 = red
+  const color = daysLeft > 10 ? '#22c55e' : daysLeft > 3 ? '#f59e0b' : '#ef4444';
+  return `<span class="badge badge-trial" style="color:${color}">⏱ ${daysLeft}d left</span>`;
+}
+
+function daysBar(daysLeft, type, totalDays = 30) {
+  if (type === 'full' || daysLeft === null || daysLeft === undefined) return '';
+  const pct = Math.min(100, Math.round((daysLeft / totalDays) * 100));
+  const color = daysLeft > 10 ? 'var(--success)' : daysLeft > 3 ? 'var(--accent3)' : 'var(--danger)';
+  return `<div class="days-bar"><div class="days-fill" style="width:${pct}%;background:${color}"></div></div>`;
+}
+
+// ── Tab nav ───────────────────────────────────────────────────
+function showTab(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'keys')       loadKeys();
+  if (name === 'suspicious') loadSuspicious();
+  if (name === 'logs')       loadLogs();
+}
+
+// ── Health ────────────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const r = await fetch(BASE + '/health').then(r => r.json());
+    const el = document.getElementById('serverStatus');
+    el.textContent = '🟢 ' + r.service;
+    el.style.color = 'var(--success)';
+    loadDashboard();
+  } catch {
+    document.getElementById('serverStatus').textContent = '🔴 Server Offline';
+    document.getElementById('serverStatus').style.color = 'var(--danger)';
+  }
+}
+
+// ── Dashboard stats ───────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const d = await api('GET', '/dashboard');
+    if (!d.success) return;
+    document.getElementById('s-total').textContent   = d.stats.totalKeys;
+    document.getElementById('s-full').textContent    = d.stats.fullKeys;
+    document.getElementById('s-trial').textContent   = d.stats.trialKeys;
+    document.getElementById('s-devices').textContent = d.stats.totalDevices;
+    document.getElementById('s-today').textContent   = d.todayActivations;
+  } catch(e) {}
+}
+
+// ── All Keys ──────────────────────────────────────────────────
+async function loadKeys() {
+  document.getElementById('keysBody').innerHTML =
+    '<tr class="loading-row"><td colspan="7"><span class="spinner"></span> Loading…</td></tr>';
+  try {
+    const r = await api('GET', '/keys');
+    if (!r.success) return;
+    allKeys = r.keys;
+    renderKeys(allKeys);
+    loadDashboard();
+  } catch(e) { toast('Failed to load keys: ' + e.message, 'err'); }
+}
+
+function renderKeys(keys) {
+  const tbody = document.getElementById('keysBody');
+  if (!keys.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No licenses yet. Go to Generate Key tab.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = keys.map(k => `
+    <tr>
+      <td class="mono" style="color:var(--accent);cursor:pointer" onclick="openDetail('${k.key_hash}')">${k.key_display}</td>
+      <td style="font-size:12px;color:var(--muted)">${k.email}</td>
+      <td>
+        ${typeBadge(k.type, k.daysLeft, k.is_active)}
+        ${k.type === 'trial' ? daysBar(k.daysLeft, k.type) : ''}
+      </td>
+      <td style="text-align:center;font-weight:700">${k.active_devices||0}/${k.max_devices}
+        ${k.fail_count > 2 ? '<br><span style="color:var(--danger);font-size:10px">⚠ '+k.fail_count+' fails</span>' : ''}
+      </td>
+      <td>${k.is_active
+        ? '<span style="color:var(--success);font-size:11px">● Active</span>'
+        : '<span style="color:var(--danger);font-size:11px">● Revoked</span>'}</td>
+      <td style="font-size:11px;color:var(--muted)">${fmtDate(k.issued_at)}</td>
+      <td><div class="actions">
+        <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.key_hash}')">Details</button>
+        <button class="btn btn-warn btn-sm" onclick="quickTransfer('${k.key_hash}')">Transfer</button>
+        ${k.is_active
+          ? `<button class="btn btn-danger btn-sm" onclick="quickRevoke('${k.key_hash}','${k.key_display}')">Revoke</button>`
+          : `<button class="btn btn-success btn-sm" onclick="quickRestore('${k.key_hash}')">Restore</button>`}
+      </div></td>
+    </tr>`).join('');
+}
+
+function filterKeys() {
+  const q  = document.getElementById('keySearch').value.toLowerCase();
+  const tp = document.getElementById('keyFilter').value;
+  renderKeys(allKeys.filter(k =>
+    (!q  || k.key_display.toLowerCase().includes(q) || k.email.toLowerCase().includes(q) || (k.notes||'').toLowerCase().includes(q)) &&
+    (!tp || k.type === tp)
+  ));
+}
+
+async function quickRevoke(hash, display) {
+  if (!confirm(`Revoke license:\n${display}\n\nAll devices will be blocked on next validation.`)) return;
+  const r = await api('POST', '/keys/' + hash + '/revoke');
+  if (r.success) { toast('License revoked', 'err'); loadKeys(); }
+}
+async function quickRestore(hash) {
+  const r = await api('POST', '/keys/' + hash + '/restore');
+  if (r.success) { toast('License restored', 'ok'); loadKeys(); }
+}
+async function quickTransfer(hash) {
+  if (!confirm('Remove ALL device activations for this license?\n\nCustomer can then activate on a new device.')) return;
+  const r = await api('POST', '/devices/' + hash + '/transfer-all');
+  if (r.success) { toast('All device slots freed', 'ok'); loadKeys(); }
+}
+
+// ── Detail panel ──────────────────────────────────────────────
+async function openDetail(hash) {
+  document.getElementById('detailContent').innerHTML =
+    '<div style="padding:40px;text-align:center"><span class="spinner"></span> Loading…</div>';
+  document.getElementById('detailOverlay').classList.add('open');
+  document.getElementById('detailPanel').classList.add('open');
+
+  try {
+    const r = await api('GET', '/keys/' + hash);
+    const k = r.key;
+    const devicesActive = r.devices.filter(d => !d.is_revoked);
+    const devicesAll    = r.devices;
+
+    document.getElementById('detailContent').innerHTML = `
+      <h3 style="font-size:17px;font-weight:700;margin-bottom:4px">License Detail</h3>
+      <p style="font-size:12px;color:var(--muted)">${k.email}</p>
+
+      <div class="detail-key">${k.key_display}</div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-item-label">Type</div>
+          <div class="detail-item-val">${typeBadge(k.type, k.daysLeft, k.is_active)}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-item-label">${k.type === 'trial' ? 'Days Remaining' : 'License'}</div>
+          <div class="detail-item-val" style="color:${k.daysLeft <= 0 && k.type === 'trial' ? 'var(--danger)' : 'var(--accent)'}">
+            ${k.type === 'full' ? 'Permanent ♾' : (k.daysLeft != null ? k.daysLeft + ' days' : 'Not activated yet')}
+          </div>
+          ${k.type === 'trial' ? daysBar(k.daysLeft, k.type) : ''}
+        </div>
+        <div class="detail-item">
+          <div class="detail-item-label">Max Devices</div>
+          <div class="detail-item-val">${k.max_devices}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-item-label">Status</div>
+          <div class="detail-item-val" style="color:${k.is_active ? 'var(--success)' : 'var(--danger)'}">
+            ${k.is_active ? '● Active' : '● Revoked'}
+          </div>
+        </div>
+      </div>
+
+      ${k.notes ? `<div style="font-size:12px;color:var(--muted);background:var(--card);border-radius:8px;padding:10px 12px;margin-bottom:14px">📝 ${k.notes}</div>` : ''}
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Issued: ${fmtDate(k.issued_at)}</div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+        ${k.is_active
+          ? `<button class="btn btn-danger btn-sm" onclick="detailRevoke('${hash}','${k.key_display}')">🚫 Revoke License</button>`
+          : `<button class="btn btn-success btn-sm" onclick="detailRestore('${hash}')">✅ Restore License</button>`}
+        <button class="btn btn-warn btn-sm" onclick="detailTransferAll('${hash}')">🔄 Free All Device Slots</button>
+      </div>
+
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">
+        Active Devices (${devicesActive.length}/${k.max_devices})
+      </div>
+
+      ${devicesAll.length ? devicesAll.map(d => `
+        <div class="device-card">
+          <div class="device-name">${d.device_name || 'Unknown Device'}
+            ${d.is_revoked ? '<span class="badge badge-revoked" style="margin-left:6px">REVOKED</span>' : '<span class="badge badge-active" style="margin-left:6px">ACTIVE</span>'}
+          </div>
+          <div class="device-meta">
+            ID: ${String(d.device_id).substring(0,20)}…<br>
+            Activated: ${fmtDate(d.activated_at)} | Last seen: ${fmtDate(d.last_seen)}
+          </div>
+          <div class="device-actions">
+            ${!d.is_revoked ? `<button class="btn btn-danger btn-sm" onclick="detailRevokeDevice('${hash}','${d.device_id}')">🚫 Revoke Device</button>` : ''}
+            <button class="btn btn-secondary btn-sm" onclick="detailTransferDevice('${hash}','${d.device_id}')">🔄 Free This Slot</button>
+          </div>
+        </div>`).join('') : '<p style="color:var(--muted);font-size:13px">No device activations yet.</p>'}
+
+      <div style="font-size:13px;font-weight:700;margin:16px 0 10px">Recent Activity (last 10)</div>
+      ${r.logs.slice(0,10).map(l => `
+        <div style="display:flex;justify-content:space-between;align-items:center;
+          padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;gap:8px">
+          <span style="font-family:monospace;color:var(--accent2)">${l.action}</span>
+          <span style="color:${l.result.startsWith('fail') ? 'var(--danger)' : 'var(--success)'};font-weight:700">
+            ${l.result.startsWith('fail') ? '✗ FAIL' : '✓ OK'}</span>
+          <span style="color:var(--muted)">${l.ip || '—'}</span>
+          <span style="color:var(--muted);font-size:11px">${fmtDate(l.ts)}</span>
+        </div>`).join('') || '<p style="color:var(--muted);font-size:13px">No logs yet.</p>'}
+    `;
+  } catch(e) {
+    document.getElementById('detailContent').innerHTML =
+      `<p style="color:var(--danger);padding:20px">${e.message}</p>`;
+  }
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+  document.getElementById('detailPanel').classList.remove('open');
+}
+
+async function detailRevoke(hash, display) {
+  if (!confirm('Revoke license: ' + display + '?')) return;
+  const r = await api('POST', '/keys/' + hash + '/revoke');
+  if (r.success) { toast('Revoked', 'err'); openDetail(hash); loadKeys(); }
+}
+async function detailRestore(hash) {
+  const r = await api('POST', '/keys/' + hash + '/restore');
+  if (r.success) { toast('Restored', 'ok'); openDetail(hash); loadKeys(); }
+}
+async function detailRevokeDevice(hash, did) {
+  if (!confirm('Revoke this device?')) return;
+  const r = await api('POST', '/devices/' + hash + '/' + encodeURIComponent(did) + '/revoke');
+  if (r.success) { toast('Device revoked', 'err'); openDetail(hash); loadKeys(); }
+}
+async function detailTransferDevice(hash, did) {
+  if (!confirm('Remove this device slot? Customer can then activate on a new device.')) return;
+  const r = await api('POST', '/devices/' + hash + '/' + encodeURIComponent(did) + '/transfer');
+  if (r.success) { toast('Device slot freed', 'ok'); openDetail(hash); loadKeys(); }
+}
+async function detailTransferAll(hash) {
+  if (!confirm('Remove ALL device activations? License can be activated on fresh devices.')) return;
+  const r = await api('POST', '/devices/' + hash + '/transfer-all');
+  if (r.success) { toast('All slots freed', 'ok'); openDetail(hash); loadKeys(); }
+}
+
+// ── Generate Key ──────────────────────────────────────────────
+async function generateKey() {
+  const email = document.getElementById('genEmail').value.trim();
+  const type  = document.getElementById('genType').value;
+  const max   = document.getElementById('genDevices').value;
+  const notes = document.getElementById('genNotes').value.trim();
+  const alert = document.getElementById('genAlert');
+  alert.className = 'alert';
+
+  if (!email) {
+    alert.textContent = 'Customer email is required.';
+    alert.className = 'alert err';
+    return;
+  }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+
+  try {
+    const r = await api('POST', '/keys/generate', { email, type, maxDevices: max, notes });
+    if (!r.success) throw new Error(r.error);
+    document.getElementById('genKeyText').textContent = r.key;
+    document.getElementById('genKeyType').textContent  = r.type === 'full' ? 'Full (Permanent)' : 'Trial (30 Days)';
+    document.getElementById('genKeyEmail').textContent = r.email;
+    document.getElementById('genKeyDev').textContent   = r.maxDevices;
+    document.getElementById('genKeyOut').style.display = 'block';
+    document.getElementById('copyKey').value = r.key;
+    toast('✅ Key generated!', 'ok');
+    loadDashboard();
+  } catch(e) {
+    alert.textContent = '❌ ' + e.message;
+    alert.className = 'alert err';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✨ Generate & Register Key';
+  }
+}
+
+function copyKey() {
+  const key = document.getElementById('genKeyText').textContent;
+  navigator.clipboard.writeText(key).then(() => toast('📋 Key copied!', 'ok'));
+}
+function copyToClipboard() {
+  const key = document.getElementById('copyKey').value.trim();
+  if (!key) return;
+  navigator.clipboard.writeText(key).then(() => {
+    const a = document.getElementById('copyAlert');
+    a.textContent = '✅ Copied to clipboard!'; a.className = 'alert ok';
+    setTimeout(() => a.className = 'alert', 3000);
+  });
+}
+function openWhatsApp() {
+  const key = document.getElementById('copyKey').value.trim();
+  if (!key) return;
+  const msg = `Your Medishop Pharmacy Billing license key:\n\n*${key}*\n\nEnter this key in the app to activate your license.\n\nSupport: support@medishop.in`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ── Verify ────────────────────────────────────────────────────
+async function verifyKey() {
+  const key = document.getElementById('verifyKeyInput').value.trim();
+  if (!key) return;
+  const out = document.getElementById('verifyResult');
+  out.innerHTML = '<span class="spinner"></span> Checking…';
+  try {
+    const r = await api('POST', '/verify', { licenseKey: key });
+    if (!r.success) throw new Error(r.error);
+    out.innerHTML = `
+      <div class="card" style="margin-top:0">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px">
+          <div><div class="stat-label">Type</div>${typeBadge(r.type, r.daysLeft, r.isActive)}</div>
+          <div><div class="stat-label">Status</div>
+            <span style="color:${r.isActive ? 'var(--success)' : 'var(--danger)'};font-weight:700">
+              ${r.isActive ? '● Active' : '● Revoked'}</span></div>
+          <div><div class="stat-label">Email</div><span style="font-size:13px">${r.email}</span></div>
+          <div><div class="stat-label">Devices</div><span style="font-weight:700">${r.deviceCount}/${r.maxDevices}</span></div>
+          ${r.type === 'trial' ? `<div><div class="stat-label">Days Left</div>
+            <span style="font-weight:700;color:${r.daysLeft > 0 ? 'var(--accent)' : 'var(--danger)'}">
+              ${r.isExpired ? '0 — EXPIRED' : r.daysLeft + ' days'}</span>
+            ${daysBar(r.daysLeft, r.type)}</div>` : ''}
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="openDetail('${r.keyHash}')">📋 Open Full Detail Panel</button>
+      </div>`;
+  } catch(e) {
+    out.innerHTML = `<div class="alert err" style="display:block">❌ ${e.message}</div>`;
+  }
+}
+
+// ── Suspicious ────────────────────────────────────────────────
+async function loadSuspicious() {
+  const tbody = document.getElementById('suspBody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="6"><span class="spinner"></span> Loading…</td></tr>';
+  try {
+    const r = await api('GET', '/suspicious');
+    tbody.innerHTML = r.suspicious.length ? r.suspicious.map(s => `
+      <tr>
+        <td class="mono" style="color:var(--accent)">${s.key_display || s.key_hash.substring(0,12)+'…'}</td>
+        <td style="color:var(--muted)">${s.email || '—'}</td>
+        <td>${s.type === 'full' ? '<span class="badge badge-full">FULL</span>' : '<span class="badge badge-trial">TRIAL</span>'}</td>
+        <td style="color:var(--danger);font-weight:700">${s.fail_count}</td>
+        <td style="color:var(--muted)">${fmtDate(s.last_attempt)}</td>
+        <td style="color:var(--muted);font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis">${s.ips || '—'}</td>
+      </tr>`).join('') :
+      '<tr class="empty-row"><td colspan="6">✅ No suspicious activity detected.</td></tr>';
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+// ── Logs ──────────────────────────────────────────────────────
+async function loadLogs() {
+  const tbody = document.getElementById('logsBody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="7"><span class="spinner"></span> Loading…</td></tr>';
+  try {
+    const filter = document.getElementById('logFilter').value;
+    const url    = filter ? '/logs?action=' + filter + '&limit=200' : '/logs?limit=200';
+    const r      = await api('GET', url);
+    allLogs = r.logs;
+    renderLogs(allLogs);
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function renderLogs(logs) {
+  const tbody = document.getElementById('logsBody');
+  tbody.innerHTML = logs.length ? logs.map(l => `
+    <tr>
+      <td style="color:var(--muted);white-space:nowrap;font-size:11px">${fmtDate(l.ts)}</td>
+      <td style="font-family:monospace;color:var(--accent2)">${l.action}</td>
+      <td style="font-weight:700;color:${l.result.startsWith('fail') ? 'var(--danger)' : 'var(--success)'}">
+        ${l.result.startsWith('fail') ? '✗ FAIL' : '✓ OK'}</td>
+      <td class="mono" style="font-size:10px">${l.key_hash ? l.key_hash.substring(0,10)+'…' : '—'}</td>
+      <td style="color:var(--muted);font-size:11px">${l.device_id ? String(l.device_id).substring(0,12)+'…' : '—'}</td>
+      <td style="color:var(--muted)">${l.ip || '—'}</td>
+      <td style="color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis">${l.detail || '—'}</td>
+    </tr>`).join('') :
+  '<tr class="empty-row"><td colspan="7">No logs found.</td></tr>';
+}
+
+function filterLogs() {
+  const q = document.getElementById('logSearch').value.toLowerCase();
+  renderLogs(q ? allLogs.filter(l =>
+    (l.ip||'').toLowerCase().includes(q) ||
+    (l.action||'').toLowerCase().includes(q) ||
+    (l.detail||'').toLowerCase().includes(q)
+  ) : allLogs);
+}
+
+function exportData() {
+  window.open(BASE + '/admin/export?_t=' + Date.now(), '_blank');
+}
+
+// ── Init ──────────────────────────────────────────────────────
+checkHealth();
+loadKeys();
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SmartBilling Server Test</title>
+<style>
+body{font-family:Arial;background:#0f172a;color:#f1f5f9;padding:20px;text-align:center}
+h2{color:#3b82f6}
+.btn{background:#3b82f6;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:16px;cursor:pointer;margin:8px;display:block;width:100%}
+.result{background:#1e293b;border-radius:8px;padding:14px;margin:10px 0;font-size:14px;word-break:break-all}
+.ok{border:1px solid #22c55e;color:#22c55e}
+.err{border:1px solid #ef4444;color:#ef4444}
+</style>
+</head>
+<body>
+<h2>🔑 SmartBilling Server Test</h2>
+<p style="color:#94a3b8;font-size:13px">Open this page on your phone to test connectivity</p>
+
+<button class="btn" onclick="testHealth()">Test Server Connection</button>
+<div id="result" class="result" style="display:none"></div>
+
+<script>
+function testHealth() {
+  var url = window.location.origin + '/health';
+  var div = document.getElementById('result');
+  div.style.display = 'block';
+  div.className = 'result';
+  div.textContent = 'Testing ' + url + ' ...';
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      div.className = 'result ok';
+      div.textContent = '✅ Server OK!\n' + JSON.stringify(d, null, 2);
+    })
+    .catch(function(e) {
+      div.className = 'result err';
+      div.textContent = '❌ Failed: ' + e.message + '\n\nURL: ' + url;
+    });
+}
+window.onload = testHealth;
+</script>
+</body>
+</html>
