@@ -1,54 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Medishop Admin Portal</title>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; padding: 40px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        .btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #334155; }
-    </style>
-</head>
-<body>
-    <h1>💊 Medishop License Management</h1>
-    <div class="card">
-        <h3>Generate New License</h3>
-        <input type="email" id="email" placeholder="Customer Email" style="padding: 8px; border-radius: 4px;">
-        <button class="btn" onclick="generateKey()">Generate Full Key</button>
-    </div>
-    <div class="card" id="stats">
-        Loading statistics...
-    </div>
+<script>
+    // 1. Get the token from the current URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const statusDot = document.getElementById('status-dot'); // The red/green light in your image
 
-    <script>
-        const token = new URLSearchParams(window.location.search).get('token');
-        
-        async function fetchStats() {
-            const res = await fetch(`/admin/dashboard?token=${token}`);
-            const data = await res.json();
-            if(data.success) {
-                document.getElementById('stats').innerHTML = `
-                    <p>Total Licenses: ${data.stats.totalKeys}</p>
-                    <p>Active Devices: ${data.stats.activeDevices}</p>
-                `;
+    if (!token) {
+        alert("No security token found in URL!");
+    } else {
+        refreshDashboard();
+    }
+
+    async function refreshDashboard() {
+        try {
+            // 2. Fetch data from the server using the token
+            const response = await fetch(`/admin/dashboard?token=${token}`);
+            const data = await response.json();
+
+            if (data.success) {
+                // Change status to Green (Online)
+                statusDot.style.color = '#10b981'; 
+                document.getElementById('status-text').innerText = 'Server Online';
+
+                // Update UI Counters
+                document.getElementById('total-keys').innerText = data.stats.total;
+                document.getElementById('full-keys').innerText = data.stats.full;
+                document.getElementById('trial-keys').innerText = data.stats.trial;
+                document.getElementById('active-devices').innerText = data.stats.devices;
+
+                // Populate Recent Keys Table
+                const tableBody = document.getElementById('recent-keys-body');
+                tableBody.innerHTML = data.recent.map(k => `
+                    <tr>
+                        <td>${k.key_display}</td>
+                        <td>${k.type}</td>
+                        <td>${k.email}</td>
+                        <td>${k.is_active ? '✅' : '❌'}</td>
+                    </tr>
+                `).join('');
             }
+        } catch (error) {
+            console.error("Connection Error:", error);
+            statusDot.style.color = '#ef4444'; // Stay Red (Unreachable)
         }
-
-        async function generateKey() {
-            const email = document.getElementById('email').value;
-            const res = await fetch(`/admin/keys/generate?token=${token}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'full', email })
-            });
-            const data = await res.json();
-            if(data.success) alert('Generated: ' + data.key);
-            fetchStats();
-        }
-
-        fetchStats();
-    </script>
-</body>
-</html>
+    }
+</script>
