@@ -1,0 +1,16 @@
+{
+  "name": "medishop-license-server",
+  "version": "3.1.0",
+  "description": "Medishop Pharmacy Billing — License Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express":      "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "engines": { "node": ">=16" },
+  "author": "Medishop",
+  "license": "UNLICENSED"
+}
