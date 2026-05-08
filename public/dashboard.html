@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MediShop License Admin</title>
+<style>
+:root {
+  --bg:    #0d1117;
+  --sur:   #161b22;
+  --card:  #1c2333;
+  --bor:   #30363d;
+  --bor2:  #21262d;
+  --txt:   #e6edf3;
+  --muted: #7d8590;
+  --acc:   #2563eb;
+  --acc-h: #1d4ed8;
+  --ok:    #16a34a;
+  --warn:  #d97706;
+  --err:   #dc2626;
+  --teal:  #0891b2;
+  --purple:#7c3aed;
+  --green: #16a34a;
+  --blue:  #2563eb;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px}
+
+/* ── Topbar ── */
+.topbar{
+  background:var(--sur);border-bottom:1px solid var(--bor);
+  height:52px;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{font-size:20px}
+.brand-name{font-size:15px;font-weight:700;color:var(--txt)}
+.brand-sub{font-size:12px;color:var(--muted);margin-left:4px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.online-dot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ok);font-weight:600}
+.online-dot::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+.btn-export{
+  background:var(--sur);border:1px solid var(--bor);color:var(--txt);
+  padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;
+  display:flex;align-items:center;gap:6px;transition:background .15s;
+}
+.btn-export:hover{background:var(--card)}
+
+/* ── Main ── */
+.main{max-width:1400px;margin:0 auto;padding:24px}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}}
+.stat{
+  background:var(--sur);border:1px solid var(--bor);border-radius:10px;
+  padding:18px 20px;
+}
+.stat-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.stat-value{font-size:32px;font-weight:700;line-height:1}
+.c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-warn{color:var(--warn)}
+.c-teal{color:var(--teal)}.c-purple{color:var(--purple)}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--bor);margin-bottom:20px;overflow-x:auto}
+.tab{
+  padding:10px 18px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;
+  display:flex;align-items:center;gap:6px;
+}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab:hover:not(.active){color:var(--txt)}
+.panel{display:none}.panel.active{display:block}
+
+/* ── Card ── */
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:20px;margin-bottom:16px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* ── Search row ── */
+.search-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.search-row input{flex:1;min-width:180px}
+.search-row select{min-width:130px}
+
+/* ── Form elements ── */
+input,select,textarea{
+  background:var(--card);border:1px solid var(--bor);color:var(--txt);
+  padding:8px 12px;border-radius:6px;font-size:13px;outline:none;
+  font-family:inherit;width:100%;transition:border .15s;
+}
+input:focus,select:focus{border-color:var(--blue)}
+input::placeholder{color:var(--muted)}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+
+/* ── Buttons ── */
+.btn{
+  padding:8px 16px;border-radius:6px;border:none;cursor:pointer;
+  font-size:13px;font-weight:600;display:inline-flex;align-items:center;
+  gap:6px;transition:all .15s;white-space:nowrap;font-family:inherit;
+}
+.btn:hover{opacity:.85}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-success{background:var(--ok);color:#fff}
+.btn-warn{background:var(--warn);color:#fff}
+.btn-danger{background:var(--err);color:#fff}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--bor)}
+.btn-ghost:hover{background:var(--card);color:var(--txt)}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:5px}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--bor)}
+th{
+  padding:10px 12px;font-size:11px;font-weight:700;text-align:left;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+  background:transparent;white-space:nowrap;
+}
+td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--bor2);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.02)}
+.key-link{font-family:'Courier New',monospace;color:var(--blue);cursor:pointer;font-size:12px;font-weight:600}
+.key-link:hover{text-decoration:underline}
+
+/* ── Badges ── */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;white-space:nowrap;
+}
+.badge-trial{background:rgba(217,119,6,.15);color:#f59e0b;border:1px solid rgba(217,119,6,.3)}
+.badge-full {background:rgba(22,163,74,.15); color:#4ade80;border:1px solid rgba(22,163,74,.3)}
+.badge-active{background:rgba(22,163,74,.1);color:var(--ok)}
+.badge-revoked{background:rgba(100,116,139,.1);color:var(--muted)}
+.badge-expired{background:rgba(220,38,38,.1);color:var(--err)}
+.badge-warn{background:rgba(217,119,6,.12);color:var(--warn);font-size:10px;padding:2px 6px;border-radius:4px}
+.dot-ok{color:var(--ok);font-weight:700;font-size:13px}
+.dot-err{color:var(--err);font-weight:700;font-size:13px}
+
+/* ── Key output ── */
+.key-out{
+  background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.25);
+  border-radius:8px;padding:16px;margin-top:14px;display:none;text-align:center;
+}
+.key-text{
+  font-family:'Courier New',monospace;font-size:17px;font-weight:700;
+  color:#4ade80;letter-spacing:.08em;word-break:break-all;margin-bottom:8px;
+}
+.key-meta{font-size:12px;color:var(--muted);margin-bottom:12px}
+.key-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* ── Alert ── */
+.alert{padding:10px 14px;border-radius:6px;font-size:13px;margin-top:10px;display:none;line-height:1.5}
+.alert-ok  {background:rgba(22,163,74,.1); border:1px solid rgba(22,163,74,.3); color:#4ade80;display:block}
+.alert-err {background:rgba(220,38,38,.1); border:1px solid rgba(220,38,38,.3); color:#f87171;display:block}
+
+/* ── Spinner ── */
+.sp{
+  display:inline-block;width:12px;height:12px;
+  border:2px solid rgba(255,255,255,.15);border-top-color:currentColor;
+  border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Detail panel ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none}
+.overlay.open{display:block}
+.drawer{
+  position:fixed;top:0;right:0;width:480px;max-width:100vw;height:100vh;
+  background:var(--sur);border-left:1px solid var(--bor);z-index:201;
+  padding:0;overflow-y:auto;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+.drawer.open{transform:none}
+.drawer-head{
+  padding:18px 20px;border-bottom:1px solid var(--bor);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--sur);z-index:10;
+}
+.drawer-body{padding:20px}
+.drawer-key{
+  background:var(--card);border:1px solid var(--bor);border-radius:8px;
+  padding:12px;font-family:'Courier New',monospace;font-size:13px;
+  color:var(--blue);text-align:center;word-break:break-all;margin-bottom:16px;letter-spacing:.04em;
+}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.info-box{background:var(--card);border:1px solid var(--bor2);border-radius:8px;padding:12px}
+.info-box-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.info-box-value{font-size:18px;font-weight:700}
+.dev-card{
+  background:var(--card);border:1px solid var(--bor2);border-radius:8px;
+  padding:12px 14px;margin-bottom:8px;
+}
+.dev-name{font-weight:600;font-size:13px;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.dev-meta{font-size:11px;color:var(--muted);margin-bottom:8px}
+.log-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:1px solid var(--bor2);font-size:12px;gap:8px;flex-wrap:wrap;
+}
+.log-row:last-child{border-bottom:none}
+.log-action{font-family:monospace;color:var(--teal)}
+.log-ok{color:var(--ok);font-weight:700}.log-fail{color:var(--err);font-weight:700}
+.log-time{font-size:10px;color:var(--muted)}
+
+/* ── Toast ── */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--card);border:1px solid var(--bor);border-radius:8px;
+  padding:11px 18px;font-size:13px;font-weight:600;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);
+  transform:translateY(12px);opacity:0;transition:all .25s;pointer-events:none;
+}
+#toast.show{transform:none;opacity:1}
+#toast.ok{border-color:rgba(22,163,74,.4);color:#4ade80}
+#toast.err{border-color:rgba(220,38,38,.4);color:#f87171}
+#toast.info{border-color:rgba(37,99,235,.4);color:#60a5fa}
+
+/* ── Verify result ── */
+.verify-box{
+  background:var(--card);border:1px solid var(--bor);border-radius:8px;
+  padding:16px;margin-top:14px;display:none;
+}
+.verify-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor2);font-size:13px}
+.verify-row:last-child{border-bottom:none}
+.verify-label{color:var(--muted)}
+.days-bar{height:4px;background:var(--bor);border-radius:2px;margin-top:6px;overflow:hidden}
+.days-fill{height:100%;border-radius:2px;transition:width .4s}
+.empty-msg{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-icon">💊</span>
+    <span class="brand-name">MediShop License Admin</span>
+    <span class="brand-sub" id="orgName">Cloud Sprint | contact@cloudsprint.in</span>
+  </div>
+  <div class="topbar-right">
+    <span class="online-dot" id="onlineStatus">Online</span>
+    <button class="btn-export" onclick="exportData()">⬇ Export</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total Keys</div>   <div class="stat-value c-blue"   id="s-total">—</div></div>
+    <div class="stat"><div class="stat-label">Full Licenses</div> <div class="stat-value c-green"  id="s-full">—</div></div>
+    <div class="stat"><div class="stat-label">Trial Licenses</div><div class="stat-value c-warn"   id="s-trial">—</div></div>
+    <div class="stat"><div class="stat-label">Active Devices</div><div class="stat-value c-teal"   id="s-devices">—</div></div>
+    <div class="stat"><div class="stat-label">Today Activations</div><div class="stat-value c-purple" id="s-today">—</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('keys',this)">📋 All Licenses</div>
+    <div class="tab" onclick="switchTab('gen',this)">⚡ Generate Key</div>
+    <div class="tab" onclick="switchTab('verify',this)">🔍 Verify &amp; Manage</div>
+    <div class="tab" onclick="switchTab('susp',this)">⚠️ Suspicious</div>
+    <div class="tab" onclick="switchTab('logs',this)">📋 Activity Logs</div>
+  </div>
+
+  <!-- ════ ALL LICENSES ════ -->
+  <div id="tab-keys" class="panel active">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">📋 All License Keys</div>
+        <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="loadKeys()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="search-row">
+        <input type="search" id="kSearch" placeholder="Search by key, email, type..." oninput="filterKeys()"/>
+        <select id="kFilter" onchange="filterKeys()" style="width:auto;min-width:130px">
+          <option value="">All Types</option>
+          <option value="full">Full</option>
+          <option value="trial">Trial</option>
+        </select>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>License Key</th>
+            <th>Email</th>
+            <th>Type</th>
+            <th>Devices</th>
+            <th>Status</th>
+            <th>Issued</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="kBody">
+            <tr><td colspan="7" class="empty-msg"><span class="sp"></span> Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ GENERATE KEY ════ -->
+  <div id="tab-gen" class="panel">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">⚡ Generate New License Key</div>
+      </div>
+      <div class="form-grid">
+        <div class="fg">
+          <label>Customer Email *</label>
+          <input type="email" id="gEmail" placeholder="customer@pharmacy.com"/>
+        </div>
+        <div class="fg">
+          <label>License Type *</label>
+          <select id="gType">
+            <option value="trial">Trial License (30 Days)</option>
+            <option value="full">Full License (Permanent)</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Max Devices</label>
+          <input type="number" id="gDev" value="1" min="1" max="10"/>
+        </div>
+        <div class="fg">
+          <label>Notes (Shop name, city...)</label>
+          <input type="text" id="gNotes" placeholder="Ram Medical, Hyderabad"/>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="gBtn" onclick="genKey()">⚡ Generate &amp; Register Key</button>
+      <div id="gAlert" class="alert"></div>
+      <div id="kOut" class="key-out">
+        <div id="kTxt" class="key-text"></div>
+        <div id="kMeta" class="key-meta"></div>
+        <div class="key-actions">
+          <button class="btn btn-success btn-sm" onclick="copyKey()">📋 Copy Key</button>
+          <button class="btn btn-primary btn-sm" onclick="waShare()">📱 Send via WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ VERIFY & MANAGE ════ -->
+  <div id="tab-verify" class="panel">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">🔍 Verify &amp; Manage License</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="vKey" placeholder="MEDSHP-FULL-XXXXXX-XXXXXX-XXXXXX"
+          style="font-family:monospace;text-transform:uppercase;flex:1"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'')"/>
+        <button class="btn btn-primary" onclick="verifyKey()" style="white-space:nowrap">🔍 Verify</button>
+      </div>
+      <div id="vResult" class="verify-box"></div>
+    </div>
+  </div>
+
+  <!-- ════ SUSPICIOUS ════ -->
+  <div id="tab-susp" class="panel">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">⚠️ Suspicious Activity</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadSusp()">↻ Refresh</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>License Key</th><th>Email</th><th>Type</th>
+            <th>Fail Count</th><th>Last Attempt</th><th>IPs</th>
+          </tr></thead>
+          <tbody id="sBody">
+            <tr><td colspan="6" class="empty-msg"><span class="sp"></span> Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ ACTIVITY LOGS ════ -->
+  <div id="tab-logs" class="panel">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">📋 Activity Logs</div>
+        <div class="card-actions">
+          <select id="lFilter" onchange="loadLogs()" style="width:auto;min-width:150px">
+            <option value="">All Actions</option>
+            <option value="activate">activate</option>
+            <option value="reactivate">reactivate</option>
+            <option value="validate">validate</option>
+            <option value="deactivate">deactivate</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadLogs()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="search-row">
+        <input type="search" id="lSearch" placeholder="Filter logs..." oninput="filterLogs()"/>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Time</th><th>Action</th><th>Result</th>
+            <th>Key (short)</th><th>Device</th><th>IP</th><th>Detail</th>
+          </tr></thead>
+          <tbody id="lBody">
+            <tr><td colspan="7" class="empty-msg"><span class="sp"></span> Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Detail Drawer -->
+<div class="overlay" id="ov" onclick="closeDet()"></div>
+<div class="drawer" id="det">
+  <div class="drawer-head">
+    <span style="font-weight:700;font-size:14px">License Detail</span>
+    <button class="btn btn-ghost btn-sm" onclick="closeDet()">✕ Close</button>
+  </div>
+  <div class="drawer-body" id="detBody">
+    <div class="empty-msg"><span class="sp"></span> Loading...</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── Config ──────────────────────────────────────────────────────────────────
+// Token is injected server-side; fallback reads from URL ?token=
+const SEC = (() => {
+  const u = new URLSearchParams(location.search);
+  return u.get('token') || '';
+})();
+
+const BASE = location.origin;
+let allKeys = [], allLogs = [], TRIAL_DAYS = 30;
+
+// ─── API helper ───────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  try {
+    const r = await fetch(BASE + '/admin' + path, {
+      method,
+      headers: { 'Authorization': 'Bearer ' + SEC, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    return await r.json();
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ─── Formatting helpers ───────────────────────────────────────────────────────
+function fd(ts) {
+  if (!ts) return '—';
+  return new Date(+ts).toLocaleString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true
+  }).replace(',', ',');
+}
+function fds(ts) {
+  if (!ts) return '—';
+  return new Date(+ts).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 3000);
+}
+
+function typeBadge(k) {
+  if (!k.is_active) return '<span class="badge badge-revoked">REVOKED</span>';
+  if (k.type === 'full') return '<span class="badge badge-full">FULL</span>';
+  if (k.daysLeft <= 0)   return '<span class="badge badge-expired">TRIAL 0d</span>';
+  const cls = k.daysLeft <= 3 ? 'color:#f87171' : k.daysLeft <= 7 ? 'color:#fbbf24' : '';
+  return `<span class="badge badge-trial" style="${cls}">TRIAL ${k.daysLeft}d</span>`;
+}
+
+function failBadge(n) {
+  if (!n || n === 0) return '';
+  return ` <span class="badge badge-warn">△${n} fails</span>`;
+}
+
+function statusDot(isActive) {
+  return isActive
+    ? '<span class="dot-ok">● Active</span>'
+    : '<span class="dot-err">● Revoked</span>';
+}
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'keys')   loadKeys();
+  if (name === 'susp')   loadSusp();
+  if (name === 'logs')   loadLogs();
+}
+
+// ─── Load dashboard stats ─────────────────────────────────────────────────────
+async function loadStats() {
+  const r = await api('GET', '/dashboard');
+  if (!r.success) return;
+  const s = r.stats;
+  document.getElementById('s-total').textContent   = s.totalKeys   ?? '—';
+  document.getElementById('s-full').textContent    = s.fullKeys    ?? '—';
+  document.getElementById('s-trial').textContent   = s.trialKeys   ?? '—';
+  document.getElementById('s-devices').textContent = s.totalDevices ?? '—';
+  document.getElementById('s-today').textContent   = r.todayActivations ?? '—';
+}
+
+// ─── Health check ─────────────────────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const r = await fetch(BASE + '/health').then(r => r.json());
+    const el = document.getElementById('onlineStatus');
+    if (r.status === 'ok') {
+      el.textContent = 'Online';
+      el.style.color = 'var(--ok)';
+      TRIAL_DAYS = r.trial_days || 30;
+    } else {
+      el.textContent = 'Degraded';
+      el.style.color = 'var(--warn)';
+    }
+  } catch {
+    const el = document.getElementById('onlineStatus');
+    el.textContent = 'Offline';
+    el.style.color = 'var(--err)';
+  }
+}
+
+// ─── All Keys ─────────────────────────────────────────────────────────────────
+async function loadKeys() {
+  document.getElementById('kBody').innerHTML =
+    '<tr><td colspan="7" class="empty-msg"><span class="sp"></span> Loading...</td></tr>';
+  const r = await api('GET', '/keys');
+  if (!r.success) {
+    document.getElementById('kBody').innerHTML =
+      '<tr><td colspan="7" class="empty-msg" style="color:var(--err)">Failed to load — check server</td></tr>';
+    toast('Failed to load keys', 'err');
+    return;
+  }
+  allKeys = r.keys || [];
+  renderKeys(allKeys);
+  loadStats();
+}
+
+function renderKeys(keys) {
+  const tb = document.getElementById('kBody');
+  if (!keys.length) {
+    tb.innerHTML = '<tr><td colspan="7" class="empty-msg">No license keys yet — go to Generate Key tab</td></tr>';
+    return;
+  }
+  tb.innerHTML = keys.map(k => `
+    <tr>
+      <td>
+        <span class="key-link" onclick="openDet('${k.key_hash}')">${k.key_display}</span>
+      </td>
+      <td style="color:var(--muted);font-size:12px">
+        ${k.email}
+        ${k.notes ? `<br><span style="color:var(--bor);font-size:10px">${k.notes}</span>` : ''}
+      </td>
+      <td>${typeBadge(k)}${failBadge(k.fail_count)}</td>
+      <td style="text-align:center;font-weight:700;font-size:13px">
+        ${k.active_devices || 0}/${k.max_devices}
+      </td>
+      <td>${statusDot(k.is_active)}</td>
+      <td style="font-size:11px;color:var(--muted)">${fds(k.issued_at)}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="openDet('${k.key_hash}')">Detail</button>
+          <button class="btn btn-warn btn-sm" onclick="quickTransfer('${k.key_hash}')">Transfer</button>
+          ${k.is_active
+            ? `<button class="btn btn-danger btn-sm" onclick="quickRevoke('${k.key_hash}','${k.key_display}')">Revoke</button>`
+            : `<button class="btn btn-success btn-sm" onclick="quickRestore('${k.key_hash}')">Restore</button>`
+          }
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterKeys() {
+  const q  = document.getElementById('kSearch').value.toLowerCase();
+  const tp = document.getElementById('kFilter').value;
+  renderKeys(allKeys.filter(k =>
+    (!q  || k.key_display.toLowerCase().includes(q) || k.email.toLowerCase().includes(q) || (k.notes||'').toLowerCase().includes(q)) &&
+    (!tp || k.type === tp)
+  ));
+}
+
+async function quickRevoke(hash, display) {
+  if (!confirm(`Revoke license: ${display}?\n\nAll devices will be blocked on next check.`)) return;
+  const r = await api('POST', `/keys/${hash}/revoke`);
+  if (r.success) { toast('License revoked', 'err'); loadKeys(); }
+  else toast(r.error || 'Failed', 'err');
+}
+
+async function quickRestore(hash) {
+  const r = await api('POST', `/keys/${hash}/restore`);
+  if (r.success) { toast('License restored', 'ok'); loadKeys(); }
+  else toast(r.error || 'Failed', 'err');
+}
+
+async function quickTransfer(hash) {
+  if (!confirm('Remove ALL device activations?\n\nCustomer can then activate on a new device.')) return;
+  const r = await api('POST', `/devices/${hash}/transfer-all`);
+  if (r.success) { toast('All slots freed — customer can activate on new device', 'ok'); loadKeys(); }
+  else toast(r.error || 'Failed', 'err');
+}
+
+// ─── Generate Key ─────────────────────────────────────────────────────────────
+async function genKey() {
+  const alertEl = document.getElementById('gAlert');
+  alertEl.className = 'alert';
+  const email = document.getElementById('gEmail').value.trim();
+  if (!email) {
+    alertEl.textContent = '⚠ Customer email is required.';
+    alertEl.className = 'alert alert-err';
+    return;
+  }
+  const btn = document.getElementById('gBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="sp"></span> Generating...';
+
+  const r = await api('POST', '/keys/generate', {
+    email,
+    type:       document.getElementById('gType').value,
+    maxDevices: parseInt(document.getElementById('gDev').value) || 1,
+    notes:      document.getElementById('gNotes').value.trim()
+  });
+
+  btn.disabled = false;
+  btn.innerHTML = '⚡ Generate &amp; Register Key';
+
+  if (!r.success) {
+    alertEl.textContent = '✗ ' + (r.error || 'Generation failed');
+    alertEl.className = 'alert alert-err';
+    return;
+  }
+
+  document.getElementById('kTxt').textContent = r.key;
+  document.getElementById('kMeta').textContent =
+    r.type.toUpperCase() + ' | ' + r.email + ' | ' + r.maxDevices + ' device(s)';
+  document.getElementById('kOut').style.display = 'block';
+  alertEl.textContent = '✓ Key generated and registered successfully!';
+  alertEl.className = 'alert alert-ok';
+  toast('Key generated!', 'ok');
+  loadStats();
+}
+
+function copyKey() {
+  const k = document.getElementById('kTxt').textContent;
+  navigator.clipboard.writeText(k)
+    .then(() => toast('📋 Key copied: ' + k, 'ok'))
+    .catch(() => {
+      prompt('Copy this key:', k);
+    });
+}
+
+function waShare() {
+  const k = document.getElementById('kTxt').textContent;
+  const m = `Your MediShop Pro license key:\n\n*${k}*\n\nActivate in the app under License Setup.\n\nSupport: 9985223448`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(m), '_blank');
+}
+
+// ─── Verify key ───────────────────────────────────────────────────────────────
+async function verifyKey() {
+  const key = document.getElementById('vKey').value.trim();
+  if (!key) return;
+  const box = document.getElementById('vResult');
+  box.style.display = 'block';
+  box.innerHTML = '<div class="empty-msg"><span class="sp"></span> Verifying...</div>';
+
+  const r = await api('POST', '/verify', { licenseKey: key });
+  if (!r.success) {
+    box.innerHTML = `<div style="color:var(--err);font-size:13px">✗ ${r.error}</div>`;
+    return;
+  }
+
+  const dl = r.type === 'full' ? '♾ Permanent' :
+    (r.daysLeft <= 0 ? '<span style="color:var(--err)">0 — Expired</span>' :
+     `<span style="color:${r.daysLeft <= 3 ? 'var(--err)' : r.daysLeft <= 7 ? 'var(--warn)' : 'var(--ok)'}">${r.daysLeft} days</span>`);
+
+  const pct = r.type === 'trial' && r.daysLeft > 0 ? Math.round(r.daysLeft / TRIAL_DAYS * 100) : 0;
+  const barColor = r.daysLeft > 10 ? 'var(--ok)' : r.daysLeft > 3 ? 'var(--warn)' : 'var(--err)';
+
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <span style="font-weight:700;font-size:14px">${typeBadge(r)} ${statusDot(r.isActive)}</span>
+      <button class="btn btn-ghost btn-sm" onclick="openDet('${r.keyHash}')">Open Detail Panel →</button>
+    </div>
+    <div class="verify-row"><span class="verify-label">Email</span><span>${r.email}</span></div>
+    <div class="verify-row"><span class="verify-label">Devices</span><span style="font-weight:700">${r.deviceCount} / ${r.maxDevices}</span></div>
+    <div class="verify-row"><span class="verify-label">Days Remaining</span><span>${dl}</span></div>
+    ${r.type === 'trial' ? `<div class="days-bar" style="margin-top:8px"><div class="days-fill" style="width:${pct}%;background:${barColor}"></div></div>` : ''}
+    <div class="verify-row" style="margin-top:8px"><span class="verify-label">Type</span><span>${r.type === 'full' ? 'Full License' : 'Trial License'}</span></div>
+  `;
+}
+
+// ─── Detail Drawer ────────────────────────────────────────────────────────────
+async function openDet(hash) {
+  document.getElementById('detBody').innerHTML = '<div class="empty-msg"><span class="sp"></span> Loading...</div>';
+  document.getElementById('ov').classList.add('open');
+  document.getElementById('det').classList.add('open');
+
+  const r = await api('GET', '/keys/' + hash);
+  if (!r.success) {
+    document.getElementById('detBody').innerHTML = `<div style="color:var(--err);padding:20px">${r.error}</div>`;
+    return;
+  }
+
+  const k = r.key, devs = r.devices || [], logs = r.logs || [];
+  const activeDevs = devs.filter(d => !d.is_revoked);
+  const firstAt = activeDevs.length ? Math.min(...activeDevs.map(d => d.activated_at)) : null;
+  const dl = k.type === 'full' ? null : k.daysLeft;
+  const pct = k.type === 'trial' && dl > 0 ? Math.round(dl / TRIAL_DAYS * 100) : 0;
+  const barColor = dl > 10 ? 'var(--ok)' : dl > 3 ? 'var(--warn)' : 'var(--err)';
+
+  document.getElementById('detBody').innerHTML = `
+    <div class="drawer-key">${k.key_display}</div>
+
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="info-box-label">Type</div>
+        <div class="info-box-value">${typeBadge(k)}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-box-label">${k.type === 'trial' ? 'Days Left' : 'License'}</div>
+        <div class="info-box-value" style="font-size:16px;color:${k.type==='full'?'var(--ok)':dl<=0?'var(--err)':'var(--ok)'}">
+          ${k.type === 'full' ? '♾ Permanent' : dl > 0 ? dl + ' days' : '0 — Expired'}
+        </div>
+        ${k.type === 'trial' ? `<div class="days-bar" style="margin-top:6px"><div class="days-fill" style="width:${pct}%;background:${barColor}"></div></div>` : ''}
+      </div>
+      <div class="info-box">
+        <div class="info-box-label">Devices</div>
+        <div class="info-box-value">${activeDevs.length} / ${k.max_devices}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-box-label">Status</div>
+        <div class="info-box-value" style="font-size:15px">${statusDot(k.is_active)}</div>
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Email: <span style="color:var(--txt)">${k.email}</span></div>
+    ${k.notes ? `<div style="font-size:12px;color:var(--muted);margin-bottom:4px">Notes: <span style="color:var(--txt)">${k.notes}</span></div>` : ''}
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Issued: ${fd(k.issued_at)}</div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+      ${k.is_active
+        ? `<button class="btn btn-danger btn-sm" onclick="detRevoke('${hash}','${k.key_display}')">🚫 Revoke License</button>`
+        : `<button class="btn btn-success btn-sm" onclick="detRestore('${hash}')">✓ Restore License</button>`}
+      <button class="btn btn-warn btn-sm" onclick="detTransferAll('${hash}')">🔄 Free All Slots</button>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">
+      Activated Devices (${activeDevs.length}/${k.max_devices})
+    </div>
+
+    ${devs.length ? devs.map(d => `
+      <div class="dev-card">
+        <div class="dev-name">
+          💻 ${d.device_name || 'Unknown Device'}
+          ${d.is_revoked
+            ? '<span class="badge badge-revoked">REVOKED</span>'
+            : '<span class="badge badge-active">ACTIVE</span>'}
+        </div>
+        <div class="dev-meta">
+          Activated: ${fds(d.activated_at)} &nbsp;|&nbsp; Last seen: ${fds(d.last_seen)}
+          ${d.app_version ? ` &nbsp;|&nbsp; v${d.app_version}` : ''}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${!d.is_revoked ? `<button class="btn btn-danger btn-sm" onclick="detRevokeDev('${hash}','${d.device_id}')">🚫 Revoke Device</button>` : ''}
+          <button class="btn btn-warn btn-sm" onclick="detTransferDev('${hash}','${d.device_id}')">🔄 Free Slot</button>
+        </div>
+      </div>
+    `).join('') : '<div class="empty-msg" style="padding:16px">No devices activated yet</div>'}
+
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 10px">
+      Recent Activity
+    </div>
+
+    ${logs.slice(0, 15).map(l => `
+      <div class="log-row">
+        <span class="log-action">${l.action}</span>
+        <span class="${l.result.startsWith('fail') ? 'log-fail' : 'log-ok'}">
+          ${l.result.startsWith('fail') ? '✗ FAIL' : '✓ OK'}
+        </span>
+        <span style="color:var(--muted);font-size:11px">${l.ip || '—'}</span>
+        <span class="log-time">${fd(l.ts)}</span>
+      </div>
+    `).join('') || '<div class="empty-msg" style="padding:12px">No logs yet</div>'}
+  `;
+}
+
+function closeDet() {
+  document.getElementById('ov').classList.remove('open');
+  document.getElementById('det').classList.remove('open');
+}
+
+async function detRevoke(hash, display) {
+  if (!confirm(`Revoke: ${display}?`)) return;
+  const r = await api('POST', `/keys/${hash}/revoke`);
+  if (r.success) { toast('License revoked', 'err'); openDet(hash); loadKeys(); }
+}
+async function detRestore(hash) {
+  const r = await api('POST', `/keys/${hash}/restore`);
+  if (r.success) { toast('License restored', 'ok'); openDet(hash); loadKeys(); }
+}
+async function detRevokeDev(hash, did) {
+  if (!confirm('Revoke this device?')) return;
+  const r = await api('POST', `/devices/${hash}/${encodeURIComponent(did)}/revoke`);
+  if (r.success) { toast('Device revoked', 'err'); openDet(hash); loadKeys(); }
+}
+async function detTransferDev(hash, did) {
+  if (!confirm('Free this device slot?')) return;
+  const r = await api('POST', `/devices/${hash}/${encodeURIComponent(did)}/transfer`);
+  if (r.success) { toast('Slot freed', 'ok'); openDet(hash); loadKeys(); }
+}
+async function detTransferAll(hash) {
+  if (!confirm('Remove ALL device activations? Customer can activate on new device.')) return;
+  const r = await api('POST', `/devices/${hash}/transfer-all`);
+  if (r.success) { toast('All slots freed', 'ok'); openDet(hash); loadKeys(); }
+}
+
+// ─── Suspicious ───────────────────────────────────────────────────────────────
+async function loadSusp() {
+  document.getElementById('sBody').innerHTML =
+    '<tr><td colspan="6" class="empty-msg"><span class="sp"></span> Loading...</td></tr>';
+  const r = await api('GET', '/suspicious');
+  const tb = document.getElementById('sBody');
+  if (!r.success || !r.suspicious?.length) {
+    tb.innerHTML = '<tr><td colspan="6" class="empty-msg">✓ No suspicious activity detected</td></tr>';
+    return;
+  }
+  tb.innerHTML = r.suspicious.map(s => `
+    <tr>
+      <td><span class="key-link" onclick="openDet('${s.key_hash}')">${s.key_display}</span></td>
+      <td style="color:var(--muted);font-size:12px">${s.email}</td>
+      <td>${s.type === 'full' ? '<span class="badge badge-full">FULL</span>' : '<span class="badge badge-trial">TRIAL</span>'}</td>
+      <td style="color:var(--err);font-weight:700">${s.fail_count}</td>
+      <td style="font-size:11px;color:var(--muted)">${fd(s.last_attempt)}</td>
+      <td style="font-size:11px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis">${s.ips || '—'}</td>
+    </tr>
+  `).join('');
+}
+
+// ─── Activity Logs ────────────────────────────────────────────────────────────
+async function loadLogs() {
+  document.getElementById('lBody').innerHTML =
+    '<tr><td colspan="7" class="empty-msg"><span class="sp"></span> Loading...</td></tr>';
+  const action = document.getElementById('lFilter').value;
+  const r = await api('GET', '/logs?limit=300' + (action ? '&action=' + action : ''));
+  allLogs = r.logs || [];
+  renderLogs(allLogs);
+}
+
+function renderLogs(logs) {
+  const tb = document.getElementById('lBody');
+  if (!logs.length) {
+    tb.innerHTML = '<tr><td colspan="7" class="empty-msg">No log entries found</td></tr>';
+    return;
+  }
+  tb.innerHTML = logs.map(l => `
+    <tr>
+      <td style="font-size:11px;color:var(--muted);white-space:nowrap">${fd(l.ts)}</td>
+      <td class="log-action">${l.action}</td>
+      <td class="${l.result.startsWith('fail') ? 'log-fail' : 'log-ok'}" style="font-weight:700">
+        ${l.result.startsWith('fail') ? '✗ FAIL' : '✓ OK'}
+      </td>
+      <td style="font-family:monospace;font-size:11px;color:var(--teal)">${l.keyHash ? l.keyHash.slice(0,10)+'…' : '—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${l.deviceId ? l.deviceId.slice(0,14)+'…' : '—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${l.ip || '—'}</td>
+      <td style="font-size:11px;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis">${l.detail || '—'}</td>
+    </tr>
+  `).join('');
+}
+
+function filterLogs() {
+  const q = document.getElementById('lSearch').value.toLowerCase();
+  renderLogs(q ? allLogs.filter(l =>
+    (l.ip||'').includes(q) || (l.action||'').includes(q) ||
+    (l.detail||'').toLowerCase().includes(q) || (l.result||'').includes(q)
+  ) : allLogs);
+}
+
+// ─── Export ───────────────────────────────────────────────────────────────────
+function exportData() {
+  window.open(BASE + '/admin/export', '_blank');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+checkHealth();
+loadStats();
+loadKeys();
+</script>
+</body>
+</html>
