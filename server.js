@@ -36,12 +36,12 @@ const jwt       = require('jsonwebtoken');
 const app  = express();
 app.use(express.json());
 
-const PORT         = process.env.PORT || 8080;
+const PORT         = process.env.PORT || 3000;
 const DB_FILE      = path.join(__dirname, 'data', 'licenses.db.json');
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'ms_admin_2024_secure';
 const JWT_SECRET   = process.env.JWT_SECRET   || 'MS_JWT_Medishop_2024_Ultra_Secure_Key_99';
 const LIC_SECRET   = process.env.LIC_SECRET   || 'MS@Medishop#2024!PharmacyBilling$Key@Secure99';
-const TRIAL_DAYS   = parseInt(process.env.TRIAL_DAYS || '30');
+const TRIAL_DAYS   = parseInt(process.env.TRIAL_DAYS || '07');
 const APP_PREFIX   = 'MEDSHP';
 const CHARS        = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
