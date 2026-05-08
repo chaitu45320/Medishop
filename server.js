@@ -36,7 +36,7 @@ const jwt       = require('jsonwebtoken');
 const app  = express();
 app.use(express.json());
 
-const PORT         = process.env.PORT || 3000;
+const PORT         = process.env.PORT || 8080;
 const DB_FILE      = path.join(__dirname, 'data', 'licenses.db.json');
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'ms_admin_2024_secure';
 const JWT_SECRET   = process.env.JWT_SECRET   || 'MS_JWT_Medishop_2024_Ultra_Secure_Key_99';
